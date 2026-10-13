@@ -39,5 +39,10 @@
       "auto_restart": { "name": "Reinicio automático" },
       "printer_scheduled_prints": { "name": "Impresiones programadas" }
     }
+  },
+  "exceptions": {
+    "restart_target_unresolved": {
+      "message": "No se ha podido identificar una aplicación local de CC Tools para esta URL. Usa su dirección HTTP directa y el puerto configurado en Supervisor."
+    }
   }
 }

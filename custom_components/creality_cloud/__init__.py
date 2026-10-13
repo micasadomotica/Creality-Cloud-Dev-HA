@@ -33,6 +33,7 @@ async def async_setup_entry(
     coordinator = CrealityCloudCoordinator(hass, entry, api)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = CrealityCloudRuntimeData(api, coordinator)
+    entry.async_on_unload(entry.add_update_listener(async_entry_updated))
 
     account_name = str(
         coordinator.data.get("account", {}).get("name") or "Creality Cloud"
@@ -59,6 +60,14 @@ async def async_setup_entry(
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def async_entry_updated(
+    hass: HomeAssistant, entry: CrealityCloudConfigEntry
+) -> None:
+    """Reconnect when setup updates the URL of an already configured account."""
+    if entry.data[CONF_URL] != entry.runtime_data.api.base_url:
+        await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(

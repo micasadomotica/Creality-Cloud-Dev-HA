@@ -8,23 +8,25 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.storage import Store
 
 from .api import CrealityCloudApi, CrealityCloudApiError
 from .const import (
-    ADDON_SLUG,
     AUTO_RESTART_COOLDOWN,
     AUTO_RESTART_LIMIT,
     AUTO_RESTART_STABILIZATION,
     AUTO_RESTART_WINDOW,
     CONF_AUTO_RESTART,
+    CONF_URL,
     DOMAIN,
     EVENT_PREFIX,
     MISSED_SLOT_GRACE,
     SCAN_INTERVAL,
     STALE_RESTART_DELAY,
 )
+from .restart_target import async_resolve_restart_app
 from .watchdog import (
     missed_schedule_slots,
     monitoring_block_reason,
@@ -68,6 +70,7 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._stale_since: datetime | None = None
         self._restart_in_progress = False
         self._watchdog_status = "disabled"
+        self._restart_app: dict[str, str] | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         await self._async_load_watchdog_state()
@@ -103,6 +106,8 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         return {
             "status": self._watchdog_status,
+            "restart_app": self._restart_app["slug"] if self._restart_app else None,
+            "restart_app_name": self._restart_app["name"] if self._restart_app else None,
             "last_restart_at": (
                 self._last_restart_at.isoformat() if self._last_restart_at else None
             ),
@@ -112,6 +117,12 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def async_set_auto_restart_enabled(self, enabled: bool) -> None:
         """Enable or disable automatic recovery locally in Home Assistant."""
+        if enabled and not await self._async_resolve_restart_target():
+            self.async_update_listeners()
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="restart_target_unresolved",
+            )
         options = {**self.entry.options, CONF_AUTO_RESTART: enabled}
         self.hass.config_entries.async_update_entry(self.entry, options=options)
         if not enabled:
@@ -120,6 +131,23 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         else:
             self._watchdog_status = "monitoring"
         self.async_update_listeners()
+
+    async def _async_resolve_restart_target(self) -> bool:
+        """Never fall back to another app when the configured target is unknown."""
+        self._restart_app = None
+        if self.entry.data[CONF_URL] != self.api.base_url:
+            self._watchdog_status = "restart_target_changed"
+            return False
+        try:
+            self._restart_app = await async_resolve_restart_app(
+                self.hass, self.api.base_url
+            )
+        except Exception:  # Discovery failure must not interrupt normal polling.
+            _LOGGER.exception("Could not resolve the CC Tools restart target")
+        if not self._restart_app:
+            self._watchdog_status = "restart_target_unresolved"
+            return False
+        return True
 
     async def _async_load_watchdog_state(self) -> None:
         if self._watchdog_loaded:
@@ -210,11 +238,24 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._restart_in_progress = True
         self._watchdog_status = "restart_in_progress"
         try:
-            _LOGGER.warning("Restarting CC Tools automatically: %s", reason)
+            if not await self._async_resolve_restart_target():
+                return
+            # The URL or switch may have changed while Supervisor was queried.
+            if not self.auto_restart_enabled:
+                self._watchdog_status = "disabled"
+                return
+            if self.entry.data[CONF_URL] != self.api.base_url:
+                self._restart_app = None
+                self._watchdog_status = "restart_target_changed"
+                return
+            _LOGGER.warning(
+                "Restarting CC Tools app %s automatically: %s",
+                self._restart_app["slug"], reason,
+            )
             await self.hass.services.async_call(
                 "hassio",
                 "app_restart",
-                {"app": ADDON_SLUG},
+                {"app": self._restart_app["slug"]},
                 blocking=True,
             )
         except Exception:  # Home Assistant reports service failures through exceptions.

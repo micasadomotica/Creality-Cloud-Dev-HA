@@ -39,5 +39,10 @@
       "auto_restart": { "name": "Automatic restart" },
       "printer_scheduled_prints": { "name": "Scheduled prints" }
     }
+  },
+  "exceptions": {
+    "restart_target_unresolved": {
+      "message": "Could not identify a local CC Tools app for this URL. Use its direct HTTP address and the port configured in Supervisor."
+    }
   }
 }

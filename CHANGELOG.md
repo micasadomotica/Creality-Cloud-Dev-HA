@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4-dev.1
+
+- Resolves the CC Tools app to restart from the configured URL and current Supervisor host/port mappings, including local CC Tools Dev alongside the upstream app.
+- Blocks recovery for unresolved, remote or ambiguous targets instead of restarting a fixed app.
+- Exposes the selected restart app in switch attributes and verifies it again immediately before recovery.
+- Reloads the integration when setup updates an existing account's URL.
+- Preserves scheduler checks, cooldowns, restart limits and existing entity IDs. This development build still needs validation in Home Assistant.
+
 ## 1.0.3
 
 - Adds an opt-in Automatic restart switch for recovering a stalled CC Tools add-on.

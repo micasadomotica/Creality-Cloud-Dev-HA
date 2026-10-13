@@ -9,7 +9,6 @@ PLATFORMS = [Platform.SENSOR, Platform.SWITCH]
 SCAN_INTERVAL = timedelta(seconds=30)
 
 CONF_AUTO_RESTART = "auto_restart"
-ADDON_SLUG = "8966b8c7_cc_tools"
 MISSED_SLOT_GRACE = timedelta(minutes=5)
 STALE_RESTART_DELAY = timedelta(minutes=30)
 AUTO_RESTART_COOLDOWN = timedelta(hours=2)
