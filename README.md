@@ -7,7 +7,7 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 | Creality Cloud de TitoTB | `creality_cloud` | CC Tools original, puerto 8080 |
 | Creality Cloud Dev | `creality_cloud_dev` | CC Tools Dev, puerto 8088 |
 
-**Versión inicial independiente: 1.0.6-dev.1**, basada en TitoTB 1.0.5 y la corrección de reinicio de 1.0.5-dev. Es una pre-release pendiente de validación real en Home Assistant. Las versiones 1.0.4-dev.1 y 1.0.5-dev del repositorio anterior compartían el dominio original; esta integración crea entidades nuevas.
+**Versión inicial independiente: 1.0.6-dev.1**, basada en TitoTB 1.0.5 y la corrección de reinicio de 1.0.5-dev. Es una pre-release pendiente de validación real en Home Assistant.
 
 ## Requisitos
 
@@ -35,17 +35,6 @@ Está desactivado por defecto. Al activarlo, comprueba `restart_app` y `restart_
 La integración consulta Supervisor antes de activarlo y justo antes de cada reinicio, contrastando la dirección y el puerto reales. No utiliza un destino fijo ni se basa solo en que el puerto sea 8088. Si no existe una coincidencia única, no reinicia ninguna aplicación.
 
 Mantiene los controles de tareas bloqueadas, la espera de dos horas entre reinicios, el límite de tres reinicios en 24 horas y el periodo de estabilización. Los datos del watchdog y los eventos usan el dominio `creality_cloud_dev`, separados de la integración original.
-
-## Pasar desde 1.0.5-dev o 1.0.4-dev.1 del repositorio anterior
-
-1. Haz una copia de seguridad de Home Assistant y anota las entidades usadas por tus automatizaciones y paneles. Desactiva temporalmente **Reinicio automático** en la integración anterior.
-2. Instala este repositorio nuevo y conecta **Creality Cloud Dev** a la URL de Dev. No elimines todavía el hub anterior ni sus dispositivos.
-3. Comprueba los puntos, la sesión y las impresoras del nuevo hub. Se crean entidades nuevas; las referencias anteriores no se trasladan automáticamente. Actualiza solo las automatizaciones y paneles que deban usar Dev y comprueba que funcionan.
-4. Si también utilizas CC Tools original, deja la integración `creality_cloud` instalada desde el [repositorio de TitoTB](https://github.com/TitoTB/Creality-Cloud-HA) y conectada a su aplicación. Sustituye en HACS el antiguo fork `micasadomotica/Creality-Cloud-HA` por el original, conservando su entrada de configuración. Reinicia Home Assistant después de cambiar los archivos. El repositorio nuevo `Creality-Cloud-Dev-HA` permanece instalado por separado.
-5. Revisa las impresoras duplicadas del hub antiguo. Una impresora antigua puede seguir registrada después de cambiar la URL porque cada aplicación genera su propio identificador. Comprueba a qué instalación pertenece y sus referencias antes de retirar un dispositivo obsoleto desde Home Assistant.
-6. Activa el reinicio automático de Dev cuando sus atributos identifiquen el destino correcto. Si activas también el de TitoTB, asegúrate de que su integración esté conectada a la aplicación original.
-
-No se modifican automáticamente las entradas, entidades, dispositivos ni archivos `.storage` de la integración anterior. Mantener los mismos nombres de perfil o impresora no fusiona los dispositivos entre estos dos dominios.
 
 ## Datos disponibles
 
