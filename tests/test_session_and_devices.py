@@ -47,7 +47,7 @@ class SessionTests(unittest.TestCase):
 
 
 class DeviceTests(unittest.IsolatedAsyncioTestCase):
-    async def test_account_is_registered_before_platforms_and_url_listener_survives(self):
+    async def test_account_is_registered_before_platforms_without_duplicate_reload_listener(self):
         entry = SimpleNamespace(entry_id="existing", title="Account · Dev", data={"url": "http://ha:8088"},
                                 async_on_unload=Mock(), add_update_listener=Mock(return_value="unsubscribe"))
         coordinator = SimpleNamespace(data={"account": {"name": "Account"}}, async_config_entry_first_refresh=AsyncMock())
@@ -70,8 +70,8 @@ class DeviceTests(unittest.IsolatedAsyncioTestCase):
         })
         self.assertTrue(await namespace["async_setup_entry"](hass, entry))
         self.assertEqual(devices.async_get_or_create.call_args.kwargs["identifiers"], {("creality_cloud_dev", "account:existing")})
-        entry.add_update_listener.assert_called_once_with(listener)
-        entry.async_on_unload.assert_called_once_with("unsubscribe")
+        entry.add_update_listener.assert_not_called()
+        entry.async_on_unload.assert_not_called()
         hass.config_entries.async_forward_entry_setups.assert_awaited_once()
 
     async def test_printer_keeps_identifiers_and_links_to_registered_account(self):

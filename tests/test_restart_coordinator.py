@@ -2,7 +2,6 @@
 
 from datetime import UTC, datetime, timedelta
 import importlib.util
-import ast
 from pathlib import Path
 import sys
 from types import ModuleType, SimpleNamespace
@@ -194,29 +193,6 @@ class RestartCoordinatorTests(unittest.IsolatedAsyncioTestCase):
             ]},
         })
         self.assertEqual(self.hass.services.async_call.await_args.args[2], {"app": "local_cc_tools"})
-
-
-class UrlReloadTests(unittest.IsolatedAsyncioTestCase):
-    async def test_only_url_changes_reload_the_existing_entry(self):
-        # Compile the production callback without importing platform setup code.
-        tree = ast.parse((ROOT / "__init__.py").read_text(encoding="utf-8"))
-        callback = next(node for node in tree.body if isinstance(node, ast.AsyncFunctionDef)
-                        and node.name == "async_entry_updated")
-        for arg in callback.args.args:
-            arg.annotation = None
-        callback.returns = None
-        namespace = {"CONF_URL": "url"}
-        exec(compile(ast.Module(body=[callback], type_ignores=[]), "__init__.py", "exec"), namespace)
-        hass = SimpleNamespace(config_entries=SimpleNamespace(async_reload=AsyncMock()))
-        entry = SimpleNamespace(
-            entry_id="same-account", data={"url": "http://ha:8080"},
-            runtime_data=SimpleNamespace(api=SimpleNamespace(base_url="http://ha:8080")),
-        )
-        await namespace["async_entry_updated"](hass, entry)
-        hass.config_entries.async_reload.assert_not_awaited()
-        entry.data["url"] = "http://ha:8088"
-        await namespace["async_entry_updated"](hass, entry)
-        hass.config_entries.async_reload.assert_awaited_once_with("same-account")
 
 
 if __name__ == "__main__":

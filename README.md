@@ -59,7 +59,7 @@ Los eventos usan el prefijo `creality_cloud_dev`. La integración consulta la AP
 
 ## Validación y soporte
 
-41 pruebas automáticas cubren la separación de dominios, la misma cuenta en ambas integraciones, altas duplicadas, reconfiguración, dispositivos, sesión y destino de reinicio. La validación en una instalación real de Home Assistant queda pendiente.
+40 pruebas automáticas cubren la separación de dominios, la misma cuenta en ambas integraciones, altas duplicadas, reconfiguración, dispositivos, sesión y destino de reinicio. La validación en una instalación real de Home Assistant queda pendiente.
 
 Comunica los problemas en [Issues](https://github.com/micasadomotica/Creality-Cloud-Dev-HA/issues), indicando las versiones y la URL sin datos privados.
 
