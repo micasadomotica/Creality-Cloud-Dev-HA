@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from homeassistant.const import Platform
 
-DOMAIN = "creality_cloud"
+DOMAIN = "creality_cloud_dev"
 PLATFORMS = [Platform.SENSOR, Platform.SWITCH]
 SCAN_INTERVAL = timedelta(seconds=30)
 
@@ -17,13 +17,8 @@ AUTO_RESTART_LIMIT = 3
 AUTO_RESTART_STABILIZATION = timedelta(minutes=3)
 
 CONF_URL = "url"
-DEFAULT_ADDON_URLS = (
-    "http://8966b8c7-cc-tools:8080",
-    "http://cc-tools:8080",
-    "http://homeassistant.local:8080",
-)
 
-EVENT_PREFIX = "creality_cloud"
+EVENT_PREFIX = "creality_cloud_dev"
 
 REMOVED_ENTITY_UNIQUE_ID_SUFFIXES = (
     "automation_status",

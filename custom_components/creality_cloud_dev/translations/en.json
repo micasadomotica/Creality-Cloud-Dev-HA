@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This account already has a Dev hub. Use Reconfigure to change its URL; the existing connection was not changed.",
+      "unique_id_mismatch": "The URL belongs to a different Creality Cloud account.",
+      "reconfigure_successful": "Dev connection updated."
+    },
+    "error": {
+      "cannot_connect": "Could not connect to CC Tools Dev.",
+      "invalid_url": "Enter a valid HTTP or HTTPS URL.",
+      "account_unavailable": "Sign in to CC Tools Dev and refresh its profile before adding the hub."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "CC Tools Dev URL"
+        },
+        "data_description": {
+          "url": "Address exposed by CC Tools, including the protocol and port."
+        },
+        "description": "Enter the CC Tools Dev address, for example http://HOME_ASSISTANT_IP:8088. The original app is not detected automatically.",
+        "title": "Creality Cloud Dev"
+      },
+      "reconfigure": {
+        "title": "Change Dev connection",
+        "description": "Enter the new address for the same account. Entities are preserved and the connection is reloaded.",
+        "data": {
+          "url": "CC Tools Dev URL"
+        },
+        "data_description": {
+          "url": "Address exposed by CC Tools, including the protocol and port."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session": {
+        "name": "Session",
+        "state": {
+          "open": "Open",
+          "closed": "Closed"
+        }
+      },
+      "boosts_available": {
+        "name": "Available boosts"
+      },
+      "latest_order": {
+        "name": "Latest order"
+      },
+      "lottery_tickets": {
+        "name": "Lottery tickets"
+      },
+      "points_today": {
+        "name": "Points earned today"
+      },
+      "points_total": {
+        "name": "Total points"
+      },
+      "printer_daily_count": {
+        "name": "Prints today"
+      },
+      "printer_last_gcode": {
+        "name": "Last G-code"
+      },
+      "printer_last_run": {
+        "name": "Last print"
+      },
+      "printer_next_run": {
+        "name": "Next print"
+      },
+      "printer_status": {
+        "name": "Status",
+        "state": {
+          "disabled": "Disabled",
+          "ready": "Ready",
+          "unavailable": "Unavailable"
+        }
+      }
+    },
+    "switch": {
+      "auto_restart": {
+        "name": "Automatic restart"
+      },
+      "printer_scheduled_prints": {
+        "name": "Scheduled prints"
+      }
+    }
+  },
+  "exceptions": {
+    "restart_target_unresolved": {
+      "message": "Could not identify a local CC Tools app for this URL. Use its direct HTTP address and the port configured in Supervisor."
+    }
+  }
+}

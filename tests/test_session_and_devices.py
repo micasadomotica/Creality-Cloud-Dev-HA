@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import AsyncMock, Mock
 
-ROOT = Path(__file__).parents[1] / "custom_components/creality_cloud"
+ROOT = Path(__file__).parents[1] / "custom_components/creality_cloud_dev"
 
 
 def load_objects(filename, names, namespace):
@@ -48,7 +48,7 @@ class SessionTests(unittest.TestCase):
 
 class DeviceTests(unittest.IsolatedAsyncioTestCase):
     async def test_account_is_registered_before_platforms_and_url_listener_survives(self):
-        entry = SimpleNamespace(entry_id="existing", title="Account", data={"url": "http://ha:8088"},
+        entry = SimpleNamespace(entry_id="existing", title="Account · Dev", data={"url": "http://ha:8088"},
                                 async_on_unload=Mock(), add_update_listener=Mock(return_value="unsubscribe"))
         coordinator = SimpleNamespace(data={"account": {"name": "Account"}}, async_config_entry_first_refresh=AsyncMock())
         devices = SimpleNamespace(async_get_or_create=Mock(return_value=SimpleNamespace(id="account-device")))
@@ -62,14 +62,14 @@ class DeviceTests(unittest.IsolatedAsyncioTestCase):
         listener = AsyncMock()
         namespace = load_objects("__init__.py", {"async_setup_entry"}, {
             "CrealityCloudApi": Mock(return_value="api"), "async_get_clientsession": Mock(),
-            "CrealityCloudCoordinator": Mock(return_value=coordinator), "CONF_URL": "url", "DOMAIN": "creality_cloud",
+            "CrealityCloudCoordinator": Mock(return_value=coordinator), "CONF_URL": "url", "DOMAIN": "creality_cloud_dev",
             "dr": SimpleNamespace(async_get=lambda _: devices),
             "er": SimpleNamespace(async_get=lambda _: entities, async_entries_for_config_entry=lambda *_: []),
             "CrealityCloudRuntimeData": lambda api, cc, device_id: SimpleNamespace(api=api, coordinator=cc, account_device_id=device_id),
             "async_entry_updated": listener, "REMOVED_ENTITY_UNIQUE_ID_SUFFIXES": (), "PLATFORMS": ["sensor", "switch"],
         })
         self.assertTrue(await namespace["async_setup_entry"](hass, entry))
-        self.assertEqual(devices.async_get_or_create.call_args.kwargs["identifiers"], {("creality_cloud", "account:existing")})
+        self.assertEqual(devices.async_get_or_create.call_args.kwargs["identifiers"], {("creality_cloud_dev", "account:existing")})
         entry.add_update_listener.assert_called_once_with(listener)
         entry.async_on_unload.assert_called_once_with("unsubscribe")
         hass.config_entries.async_forward_entry_setups.assert_awaited_once()
@@ -84,13 +84,13 @@ class DeviceTests(unittest.IsolatedAsyncioTestCase):
 
         namespace = load_objects("entity.py", {"CrealityCloudEntity", "CrealityCloudPrinterEntity"}, {
             "CoordinatorEntity": CoordinatorEntity, "CrealityCloudCoordinator": object,
-            "DeviceInfo": dict, "DOMAIN": "creality_cloud",
+            "DeviceInfo": dict, "DOMAIN": "creality_cloud_dev",
         })
-        entry = SimpleNamespace(entry_id="existing", title="Account", data={"url": "http://ha:8088"},
+        entry = SimpleNamespace(entry_id="existing", title="Account · Dev", data={"url": "http://ha:8088"},
                                 runtime_data=SimpleNamespace(account_device_id="account-device",
                                     coordinator=SimpleNamespace(data={"printers": [{"id": "p1", "name": "Printer"}]})))
         entity = namespace["CrealityCloudPrinterEntity"](entry, "p1", "status")
         self.assertEqual(entity._attr_unique_id, "existing_printer_p1_status")
-        self.assertEqual(entity.device_info["identifiers"], {("creality_cloud", "existing:printer:p1")})
+        self.assertEqual(entity.device_info["identifiers"], {("creality_cloud_dev", "existing:printer:p1")})
         self.assertEqual(entity.device_info["via_device_id"], "account-device")
         self.assertNotIn("via_device", entity.device_info)

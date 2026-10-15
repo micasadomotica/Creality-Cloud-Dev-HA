@@ -1,0 +1,16 @@
+{
+  "domain": "creality_cloud_dev",
+  "name": "Creality Cloud Dev",
+  "after_dependencies": [
+    "hassio"
+  ],
+  "codeowners": [
+    "@micasadomotica"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/micasadomotica/Creality-Cloud-Dev-HA",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/micasadomotica/Creality-Cloud-Dev-HA/issues",
+  "version": "1.0.6-dev.1"
+}

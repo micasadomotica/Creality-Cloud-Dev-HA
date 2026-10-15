@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import AsyncMock, Mock, patch
 
 
-ROOT = Path(__file__).parents[1] / "custom_components/creality_cloud"
+ROOT = Path(__file__).parents[1] / "custom_components/creality_cloud_dev"
 PKG = "_cc_restart_tests"
 
 

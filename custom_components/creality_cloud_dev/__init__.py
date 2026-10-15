@@ -38,11 +38,12 @@ async def async_setup_entry(
     account_name = str(
         coordinator.data.get("account", {}).get("name") or "Creality Cloud"
     )
+    account_name += " · Dev"
     account_device = dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, f"account:{entry.entry_id}")},
         manufacturer="Creality Cloud",
-        model="CC Tools account",
+        model="CC Tools Dev account",
         name=account_name,
         configuration_url=entry.data.get("url"),
     )

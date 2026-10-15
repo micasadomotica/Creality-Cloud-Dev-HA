@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Esta cuenta ya tiene un hub Dev. Usa Reconfigurar para cambiar su URL; no se ha modificado la conexión existente.",
+      "unique_id_mismatch": "La URL corresponde a otra cuenta de Creality Cloud.",
+      "reconfigure_successful": "Conexión Dev actualizada."
+    },
+    "error": {
+      "cannot_connect": "No se pudo conectar con CC Tools Dev.",
+      "invalid_url": "Introduce una URL HTTP o HTTPS válida.",
+      "account_unavailable": "Inicia sesión en CC Tools Dev y actualiza el perfil antes de añadir el hub."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL de CC Tools Dev"
+        },
+        "data_description": {
+          "url": "Dirección expuesta por CC Tools, incluyendo el protocolo y el puerto."
+        },
+        "description": "Introduce la dirección de CC Tools Dev. Por ejemplo: http://IP_DE_HOME_ASSISTANT:8088. No se detecta automáticamente la aplicación de TitoTB.",
+        "title": "Creality Cloud Dev"
+      },
+      "reconfigure": {
+        "title": "Cambiar conexión Dev",
+        "description": "Introduce la nueva dirección de la misma cuenta. Se conservarán las entidades y se recargará la conexión.",
+        "data": {
+          "url": "URL de CC Tools Dev"
+        },
+        "data_description": {
+          "url": "Dirección expuesta por CC Tools, incluyendo el protocolo y el puerto."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session": {
+        "name": "Sesión",
+        "state": {
+          "open": "Abierta",
+          "closed": "Cerrada"
+        }
+      },
+      "boosts_available": {
+        "name": "Impulsos disponibles"
+      },
+      "latest_order": {
+        "name": "Último pedido"
+      },
+      "lottery_tickets": {
+        "name": "Boletos de lotería"
+      },
+      "points_today": {
+        "name": "Puntos obtenidos hoy"
+      },
+      "points_total": {
+        "name": "Puntos totales"
+      },
+      "printer_daily_count": {
+        "name": "Impresiones de hoy"
+      },
+      "printer_last_gcode": {
+        "name": "Último G-code"
+      },
+      "printer_last_run": {
+        "name": "Última impresión"
+      },
+      "printer_next_run": {
+        "name": "Próxima impresión"
+      },
+      "printer_status": {
+        "name": "Estado",
+        "state": {
+          "disabled": "Desactivada",
+          "ready": "Preparada",
+          "unavailable": "No disponible"
+        }
+      }
+    },
+    "switch": {
+      "auto_restart": {
+        "name": "Reinicio automático"
+      },
+      "printer_scheduled_prints": {
+        "name": "Impresiones programadas"
+      }
+    }
+  },
+  "exceptions": {
+    "restart_target_unresolved": {
+      "message": "No se ha podido identificar una aplicación local de CC Tools para esta URL. Usa su dirección HTTP directa y el puerto configurado en Supervisor."
+    }
+  }
+}

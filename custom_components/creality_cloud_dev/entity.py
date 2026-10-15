@@ -29,8 +29,8 @@ class CrealityCloudEntity(CoordinatorEntity[CrealityCloudCoordinator]):
         return DeviceInfo(
             identifiers={(DOMAIN, f"account:{self.entry.entry_id}")},
             manufacturer="Creality Cloud",
-            model="CC Tools account",
-            name=str(account.get("name") or self.entry.title or "Creality Cloud"),
+            model="CC Tools Dev account",
+            name=str(account.get("name") or "Creality Cloud") + " · Dev",
             configuration_url=self.entry.data.get("url"),
         )
 
@@ -71,7 +71,7 @@ class CrealityCloudPrinterEntity(CrealityCloudEntity):
             identifiers={(DOMAIN, f"{self.entry.entry_id}:printer:{self.printer_id}")},
             manufacturer="Creality",
             model="Creality Cloud printer",
-            name=str(self.printer.get("name") or self.printer_id),
+            name=str(self.printer.get("name") or self.printer_id) + " · Dev",
             via_device_id=self.entry.runtime_data.account_device_id,
             configuration_url=self.entry.data.get("url"),
         )

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.6-dev.1
+
+- Creates the independent Creality Cloud Dev integration (`creality_cloud_dev`) to coexist with TitoTB Creality Cloud.
+- Always asks for the Dev URL; adding an existing account never silently changes its endpoint.
+- Adds explicit URL reconfiguration for the same account, preserving its entities.
+- Separates devices, event names and watchdog storage; labels Dev devices clearly.
+- Preserves all 1.0.5-dev features, including session data and restart routing by Supervisor URL/port.
+- Requires Home Assistant 2026.8+. New entities must be reviewed before replacing references from the legacy integration.
+
 ## 1.0.5-dev
 
 - Integrates TitoTB 1.0.4 and 1.0.5: account Session sensor, session diagnostics and printer links through the registered account device ID.

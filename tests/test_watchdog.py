@@ -9,10 +9,10 @@ import unittest
 MODULE_PATH = (
     Path(__file__).parents[1]
     / "custom_components"
-    / "creality_cloud"
+    / "creality_cloud_dev"
     / "watchdog.py"
 )
-SPEC = importlib.util.spec_from_file_location("creality_cloud_watchdog", MODULE_PATH)
+SPEC = importlib.util.spec_from_file_location("creality_cloud_dev_watchdog", MODULE_PATH)
 watchdog = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 SPEC.loader.exec_module(watchdog)

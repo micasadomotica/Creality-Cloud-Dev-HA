@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, patch
 
 SPEC = importlib.util.spec_from_file_location(
     "restart_target",
-    Path(__file__).parents[1] / "custom_components/creality_cloud/restart_target.py",
+    Path(__file__).parents[1] / "custom_components/creality_cloud_dev/restart_target.py",
 )
 target = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(target)
