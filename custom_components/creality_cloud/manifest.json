@@ -10,5 +10,5 @@
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/micasadomotica/Creality-Cloud-HA/issues",
-  "version": "1.0.4-dev.1"
+  "version": "1.0.5-dev"
 }
