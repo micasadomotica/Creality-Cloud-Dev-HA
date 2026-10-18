@@ -12,7 +12,7 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 ## Requisitos
 
 - Home Assistant **2026.8 o posterior**.
-- CC Tools Dev **1.0.45** recomendado, iniciado y con el perfil de Creality actualizado.
+- [**CC Tools Dev 1.0.46**](https://github.com/micasadomotica/CC-Tools-HA/releases/tag/dev-v1.0.46) como versión estable recomendada, probada en Home Assistant. Debe estar iniciado y con el perfil de Creality actualizado.
 - Acceso de Home Assistant a la URL de CC Tools Dev.
 - Supervisor y una URL HTTP local directa para el reinicio automático. La consulta de datos admite HTTP/HTTPS; los destinos remotos, con proxy o ambiguos no permiten decidir qué aplicación reiniciar.
 
