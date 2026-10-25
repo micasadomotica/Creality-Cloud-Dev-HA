@@ -47,9 +47,7 @@ class CrealityCloudConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._url = AUTO_DISCOVERY_URL
             self._state = state
             return await self._async_create_entry()
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema({vol.Required(CONF_URL): str}),
+        return self._show_url_form(
             errors={"base": "account_unavailable"} if state else {},
         )
 
@@ -59,32 +57,44 @@ class CrealityCloudConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Change the endpoint explicitly without creating another account."""
         if user_input is not None:
             return await self._async_validate_url(str(user_input[CONF_URL]), "reconfigure")
-        return self.async_show_form(
+        return self._show_url_form(
             step_id="reconfigure",
-            data_schema=vol.Schema({vol.Required(CONF_URL, default=self._get_reconfigure_entry().data[CONF_URL]): str}),
+            value=self._get_reconfigure_entry().data[CONF_URL],
+        )
+
+    def _show_url_form(self, value: str = "", step_id: str = "user", errors=None) -> ConfigFlowResult:
+        """Keep manual examples available on initial and error forms."""
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=vol.Schema({vol.Required(CONF_URL, default=value): str}),
+            errors=errors or {},
+            description_placeholders={
+                "ip_url": "http://IP_DE_HOME_ASSISTANT:8088",
+                "hostname_url": "http://homeassistant.local:8088",
+            },
         )
 
     async def _async_validate_url(self, value: str, step_id: str = "user") -> ConfigFlowResult:
         url = normalize_url(value)
         if not url:
-            return self.async_show_form(
+            return self._show_url_form(
                 step_id=step_id,
-                data_schema=vol.Schema({vol.Required(CONF_URL, default=value): str}),
+                value=value,
                 errors={CONF_URL: "invalid_url"},
             )
         try:
             state = await async_probe_url(self.hass, url)
         except CrealityCloudApiError:
-            return self.async_show_form(
+            return self._show_url_form(
                 step_id=step_id,
-                data_schema=vol.Schema({vol.Required(CONF_URL, default=url): str}),
+                value=url,
                 errors={"base": "cannot_connect"},
             )
         account_id = str(state.get("account", {}).get("userId") or "").strip()
         if not account_id:
-            return self.async_show_form(
+            return self._show_url_form(
                 step_id=step_id,
-                data_schema=vol.Schema({vol.Required(CONF_URL, default=url): str}),
+                value=url,
                 errors={"base": "account_unavailable"},
             )
         await self.async_set_unique_id(account_id)

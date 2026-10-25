@@ -77,6 +77,7 @@ class ConfigFlowTests(unittest.IsolatedAsyncioTestCase):
         result = await self.flow.async_step_user()
         self.assertEqual(result["step_id"], "user")
         self.assertIn("url", result["data_schema"])
+        self.assertEqual(result["description_placeholders"]["hostname_url"], "http://homeassistant.local:8088")
         self.probe.assert_awaited_once_with(self.flow.hass, "http://34e9898c-cc-tools:8080")
 
     async def test_running_repository_app_is_detected_without_probing_other_apps(self):

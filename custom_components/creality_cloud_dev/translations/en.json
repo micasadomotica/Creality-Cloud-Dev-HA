@@ -18,7 +18,7 @@
         "data_description": {
           "url": "Address exposed by CC Tools, including the protocol and port."
         },
-        "description": "CC Tools Dev could not be configured automatically. Make sure it is running and enter http://HOME_ASSISTANT_IP:8088 or http://homeassistant.local:8088 (or your configured port).",
+        "description": "CC Tools Dev could not be configured automatically. Make sure it is running and enter {ip_url} or {hostname_url} (or your configured port).",
         "title": "Creality Cloud Dev"
       },
       "reconfigure": {
