@@ -17,7 +17,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import CrealityCloudConfigEntry
-from .entity import CrealityCloudEntity, CrealityCloudPrinterEntity
+from .entity import CrealityCloudEntity, CrealityCloudModelsEntity, CrealityCloudPrinterEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -80,6 +80,7 @@ ACCOUNT_SENSORS = (
 )
 
 PRINTER_SENSOR_KEYS = ("status", "daily_count", "last_run", "next_run", "last_gcode")
+MODELS_SENSOR_KEYS = ("default_category", "available", "last_model_upload", "last_upload", "next_upload", "uploads_today")
 
 
 async def async_setup_entry(
@@ -91,6 +92,7 @@ async def async_setup_entry(
     async_add_entities(
         CrealityCloudSensor(entry, description) for description in ACCOUNT_SENSORS
     )
+    async_add_entities(CrealityCloudModelsSensor(entry, key) for key in MODELS_SENSOR_KEYS)
     known_printers: set[str] = set()
 
     @callback
@@ -134,6 +136,55 @@ class CrealityCloudSensor(CrealityCloudEntity, SensorEntity):
         """Return useful diagnostics without exposing private configuration."""
         if self.entity_description.attributes_fn:
             return self.entity_description.attributes_fn(self.coordinator.data)
+        return None
+
+
+class CrealityCloudModelsSensor(CrealityCloudModelsEntity, SensorEntity):
+    """Model uploads and saved library configuration."""
+
+    def __init__(self, entry, key: str) -> None:
+        super().__init__(entry, key)
+        self.key = key
+        self._attr_translation_key = f"models_{key}"
+        if key in {"last_upload", "next_upload"}:
+            self._attr_device_class = SensorDeviceClass.TIMESTAMP
+        self._attr_icon = {
+            "default_category": "mdi:shape",
+            "available": "mdi:cube-outline",
+            "last_model_upload": "mdi:cube-send",
+            "last_upload": "mdi:history",
+            "next_upload": "mdi:clock-outline",
+            "uploads_today": "mdi:counter",
+        }[key]
+
+    @property
+    def native_value(self):
+        """Return successful deliveries, not attempts or reward points."""
+        if self.key == "default_category":
+            category = self.models.get("defaultCategory") or {}
+            parts = (category.get("category"), category.get("subcategory"))
+            return " / ".join(parts) if all(parts) else None
+        if self.key == "available":
+            return self.models.get("availableCount")
+        if self.key == "last_model_upload":
+            name = (self.models.get("lastModel") or {}).get("name")
+            return str(name)[:255] if name else None
+        if self.key == "last_upload":
+            return parse_datetime(self.models.get("lastUploadAt"))
+        if self.key == "next_upload":
+            return parse_datetime(self.models.get("nextUploadAt")) if self.models.get("enabled") else None
+        return self.models.get("uploadsToday")
+
+    @property
+    def extra_state_attributes(self):
+        """Expose model details and inventory freshness."""
+        if self.key == "last_model_upload":
+            model = self.models.get("lastModel") or {}
+            return {"name": model.get("name"), "model_id": model.get("id"), "url": model.get("url")}
+        if self.key == "available":
+            return {"scanned_at": self.models.get("scannedAt"), "library_error": self.models.get("libraryError")}
+        if self.key == "uploads_today":
+            return {"daily_limit": self.models.get("dailyLimit"), "timezone": self.models.get("timezone")}
         return None
 
 
@@ -187,7 +238,8 @@ def parse_datetime(value: Any) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo is not None else None
     except ValueError:
         return None
 

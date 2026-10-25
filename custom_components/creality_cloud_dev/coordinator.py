@@ -80,6 +80,15 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except CrealityCloudApiError as err:
             raise UpdateFailed(str(err)) from err
 
+        state["models"] = None
+        try:
+            models = await self.api.async_models()
+            # A changed account must not mix its uploads with the current hub.
+            if str(models.get("accountId") or "") == str(state.get("account", {}).get("userId") or ""):
+                state["models"] = models.get("models")
+        except CrealityCloudApiError as err:
+            _LOGGER.debug("Models API unavailable: %s", err)
+
         event_ids = {str(event.get("id") or "") for event in events if event.get("id")}
         if self._known_event_ids is not None:
             for event in reversed(events):
@@ -293,4 +302,9 @@ class CrealityCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def async_set_task_enabled(self, task_id: str, enabled: bool) -> None:
         """Set task state and refresh all entities."""
         await self.api.async_set_task_enabled(task_id, enabled)
+        await self.async_request_refresh()
+
+    async def async_set_models_enabled(self, enabled: bool) -> None:
+        """Toggle scheduled uploads and refresh the models device."""
+        await self.api.async_set_models_enabled(enabled)
         await self.async_request_refresh()

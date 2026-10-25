@@ -7,22 +7,26 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 | Creality Cloud de TitoTB | `creality_cloud` | CC Tools original, puerto 8080 |
 | Creality Cloud Dev | `creality_cloud_dev` | CC Tools Dev, puerto 8088 |
 
-**Versión inicial independiente: 1.0.6-dev.1**, basada en TitoTB 1.0.5 y la corrección de reinicio de 1.0.5-dev. Es una pre-release pendiente de validación real en Home Assistant.
+**Versión 1.0.7**. Detecta CC Tools Dev del repositorio y añade el dispositivo **Creality Cloud Models** para consultar las subidas y controlar su programación. Conserva los dispositivos y entidades existentes al actualizar.
 
 ## Requisitos
 
 - Home Assistant **2026.8 o posterior**.
-- [**CC Tools Dev 1.0.46**](https://github.com/micasadomotica/CC-Tools-HA/releases/tag/dev-v1.0.46) como versión estable recomendada, probada en Home Assistant. Debe estar iniciado y con el perfil de Creality actualizado.
+- [**CC Tools Dev HA**](https://github.com/micasadomotica/CC-Tools-Dev-HA), iniciado y con el perfil de Creality actualizado.
 - Acceso de Home Assistant a la URL de CC Tools Dev.
 - Supervisor y una URL HTTP local directa para el reinicio automático. La consulta de datos admite HTTP/HTTPS; los destinos remotos, con proxy o ambiguos no permiten decidir qué aplicación reiniciar.
 
 ## Instalación desde HACS
 
 1. Añade `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` como repositorio personalizado de tipo **Integración**.
-2. Activa las versiones beta, descarga **Creality Cloud Dev 1.0.6-dev.1** y reinicia Home Assistant.
+2. Descarga **Creality Cloud Dev 1.0.7** y reinicia Home Assistant.
 3. En **Ajustes > Dispositivos y servicios > Añadir integración**, busca **Creality Cloud Dev**.
-4. Introduce `http://IP_DE_HOME_ASSISTANT:8088`, o el puerto que hayas configurado para Dev. El asistente siempre pide la URL; puedes dejar la aplicación original encendida.
-5. Comprueba que aparece el hub **MiCasaDomotica · Dev** (o tu nombre de perfil) dentro de Creality Cloud Dev. Los dispositivos de las impresoras también llevan el sufijo **Dev**.
+4. Si `34e9898c_cc_tools` está iniciado y responde con un perfil válido, se conecta automáticamente. Si no puede detectarlo, introduce `http://IP_DE_HOME_ASSISTANT:8088` o `http://homeassistant.local:8088`, con el puerto que hayas configurado. Puedes dejar la aplicación original encendida.
+5. Comprueba que aparece el hub con tu nombre de perfil y el sufijo **Dev**, sus impresoras y el dispositivo **Creality Cloud Models · Dev**.
+
+La detección utiliza `http://34e9898c-cc-tools:8080` en la red interna de Home Assistant, según su [convención de nombres DNS](https://contributors.home-assistant.io/apps/guides/communication/). El puerto 8088 corresponde al acceso externo habitual. Solo se prueba esa aplicación; no se seleccionan automáticamente la versión local ni la de TitoTB.
+
+Para actualizar una instalación existente, actualiza primero CC Tools Dev desde la tienda de Apps y después esta integración desde HACS; reinicia Home Assistant. No elimines el hub: conservará su URL, sus entidades y el historial. La detección automática se aplica al añadir un hub nuevo.
 
 Creality Cloud de TitoTB y Creality Cloud Dev aparecen como dos integraciones distintas. Ambas pueden consultar la misma cuenta, pero debes repartir las tareas programadas entre las aplicaciones para evitar acciones duplicadas.
 
@@ -30,7 +34,7 @@ Dentro de Dev solo se permite un hub por cuenta. Añadir otra vez esa cuenta no 
 
 ## Reinicio automático
 
-Está desactivado por defecto. Al activarlo, comprueba `restart_app` y `restart_app_name` en los atributos del interruptor. Para una aplicación Dev local, normalmente indican `local_cc_tools` y **CC Tools Dev**.
+Está desactivado por defecto. Al activarlo, comprueba `restart_app` y `restart_app_name` en los atributos del interruptor. Para la aplicación de este repositorio, normalmente indican `34e9898c_cc_tools` y **CC Tools Dev**.
 
 La integración consulta Supervisor antes de activarlo y justo antes de cada reinicio, contrastando la dirección y el puerto reales. No utiliza un destino fijo ni se basa solo en que el puerto sea 8088. Si no existe una coincidencia única, no reinicia ninguna aplicación.
 
@@ -46,9 +50,33 @@ Mantiene los controles de tareas bloqueadas, la espera de dos horas entre reinic
 
 Los eventos usan el prefijo `creality_cloud_dev`. La integración consulta la API de CC Tools; no inicia sesión directamente en Creality Cloud.
 
+## Creality Cloud Models
+
+El dispositivo es independiente de las impresoras y pertenece al mismo hub de cuenta.
+
+| Entidad | Contenido |
+|---|---|
+| Scheduled upload models / Subidas de modelos programadas | Activa o pausa la programación guardada en CC Tools. |
+| Categoría predeterminada | Categoría y subcategoría, por ejemplo `Impresoras 3D / Otro`. |
+| Diseños disponibles | Diseños válidos del último escaneo que todavía pueden enviarse. |
+| Last model upload / Último diseño subido | Nombre del último diseño enviado correctamente; ID y enlace en sus atributos. |
+| Last upload / Última subida | Fecha y hora del último envío confirmado. |
+| Next upload / Próxima subida | Fecha y hora previstas de la próxima ejecución programada. |
+| Uploads today / Subidas hoy | Número de diseños enviados correctamente hoy, en la zona horaria de CC Tools. |
+
+Configura y guarda primero la selección inicial, el límite diario y la franja horaria en **Subir diseños** de CC Tools. Después puedes activar y desactivar la programación desde Home Assistant. El interruptor conserva esos ajustes y la limpieza automática; apagarlo no cancela una subida que ya esté en curso. Si falta la configuración o pertenece a otra cuenta, muestra el error sin activarla.
+
+El interruptor incluye `last_status` y `last_message` para consultar el último resultado o error, además del horario y el límite diario. El sensor de diseños disponibles incluye la fecha del último escaneo y cualquier error de biblioteca; no realiza un escaneo de archivos en cada consulta.
+
+La última subida y el contador diario proceden del registro persistente de envíos, incluidos los diseños cuyos archivos locales ya se han limpiado. Cuentan diseños, no ejecuciones ni puntos de recompensa. Una ejecución con varios diseños incrementa el contador por cada envío confirmado; los fallidos o pendientes de comprobación no cuentan. Se incluyen envíos manuales y programados.
+
+Sin envíos anteriores, los sensores de última subida aparecen desconocidos y el contador vale cero. Con la programación apagada, la próxima subida aparece desconocida. Una fecha prevista no garantiza la ejecución: depende de la sesión, la disponibilidad de diseños y el estado del planificador de CC Tools.
+
+Se consulta `GET /api/integration/models` y el interruptor utiliza `PATCH /api/integration/models` con `{"enabled": true}` o `false`. Si la app todavía no ofrece ese endpoint, solo las entidades de Models aparecen no disponibles; actualiza CC Tools Dev. La cuenta y las impresoras siguen funcionando.
+
 ## Validación y soporte
 
-40 pruebas automáticas cubren la separación de dominios, la misma cuenta en ambas integraciones, altas duplicadas, reconfiguración, dispositivos, sesión y destino de reinicio. La validación en una instalación real de Home Assistant queda pendiente.
+Las pruebas automáticas cubren detección y URL manual, separación de cuentas y dispositivos, reconfiguración, sensores y controles de Models, fallos de API y destino de reinicio. GitHub Actions ejecuta también HACS y Hassfest. La validación en una instalación real de Home Assistant queda pendiente.
 
 Comunica los problemas en [Issues](https://github.com/micasadomotica/Creality-Cloud-Dev-HA/issues), indicando las versiones y la URL sin datos privados.
 

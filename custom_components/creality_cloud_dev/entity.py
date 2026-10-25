@@ -35,6 +35,35 @@ class CrealityCloudEntity(CoordinatorEntity[CrealityCloudCoordinator]):
         )
 
 
+class CrealityCloudModelsEntity(CrealityCloudEntity):
+    """Base entity for the separate model library device."""
+
+    def __init__(self, entry: CrealityCloudConfigEntry, key: str) -> None:
+        super().__init__(entry, f"models_{key}")
+
+    @property
+    def models(self) -> dict[str, Any]:
+        """Return the current upload data."""
+        return self.coordinator.data.get("models") or {}
+
+    @property
+    def available(self) -> bool:
+        """Do not affect account/printer entities when Models is unavailable."""
+        return super().available and isinstance(self.coordinator.data.get("models"), dict)
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Link this device to the existing account hub."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"{self.entry.entry_id}:models")},
+            manufacturer="Creality Cloud",
+            model="Creality Cloud Models",
+            name="Creality Cloud Models · Dev",
+            via_device_id=self.entry.runtime_data.account_device_id,
+            configuration_url=self.entry.data.get("url"),
+        )
+
+
 class CrealityCloudPrinterEntity(CrealityCloudEntity):
     """Base entity attached to one configured printer."""
 

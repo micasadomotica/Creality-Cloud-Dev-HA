@@ -9,7 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import CrealityCloudConfigEntry
 from .api import CrealityCloudApiError
-from .entity import CrealityCloudEntity, CrealityCloudPrinterEntity
+from .entity import CrealityCloudEntity, CrealityCloudModelsEntity, CrealityCloudPrinterEntity
 
 
 async def async_setup_entry(
@@ -18,7 +18,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up scheduled-print switches for discovered printers."""
-    async_add_entities([CrealityCloudAutoRestartSwitch(entry)])
+    async_add_entities([CrealityCloudAutoRestartSwitch(entry), CrealityCloudModelsScheduleSwitch(entry)])
     known_printers: set[str] = set()
 
     @callback
@@ -75,6 +75,49 @@ class CrealityCloudAutoRestartSwitch(CrealityCloudEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs) -> None:
         """Disable automatic recovery."""
         await self.coordinator.async_set_auto_restart_enabled(False)
+
+
+class CrealityCloudModelsScheduleSwitch(CrealityCloudModelsEntity, SwitchEntity):
+    """Enable or pause the upload schedule already configured in CC Tools."""
+
+    def __init__(self, entry: CrealityCloudConfigEntry) -> None:
+        super().__init__(entry, "scheduled_uploads")
+        self.entity_description = SwitchEntityDescription(
+            key="scheduled_uploads",
+            translation_key="models_scheduled_uploads",
+            icon="mdi:cloud-upload-outline",
+        )
+
+    @property
+    def is_on(self) -> bool:
+        """Return the saved scheduling state."""
+        return self.models.get("enabled") is True
+
+    @property
+    def extra_state_attributes(self):
+        """Expose schedule and the last result without additional entities."""
+        return {
+            "daily_limit": self.models.get("dailyLimit"),
+            "window_start": self.models.get("windowStart"),
+            "window_end": self.models.get("windowEnd"),
+            "timezone": self.models.get("timezone"),
+            "last_status": self.models.get("lastStatus"),
+            "last_message": self.models.get("lastMessage"),
+        }
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Resume uploads using the saved settings."""
+        await self._async_set_enabled(True)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Pause future scheduled uploads."""
+        await self._async_set_enabled(False)
+
+    async def _async_set_enabled(self, enabled: bool) -> None:
+        try:
+            await self.coordinator.async_set_models_enabled(enabled)
+        except CrealityCloudApiError as err:
+            raise HomeAssistantError(str(err)) from err
 
 
 class CrealityCloudPrinterScheduleSwitch(CrealityCloudPrinterEntity, SwitchEntity):

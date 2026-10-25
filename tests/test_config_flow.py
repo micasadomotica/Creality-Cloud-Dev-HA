@@ -55,6 +55,7 @@ def load_flow(probe):
     domain = next(ast.literal_eval(node.value) for node in const_tree.body if isinstance(node, ast.Assign)
                   and any(isinstance(target, ast.Name) and target.id == "DOMAIN" for target in node.targets))
     namespace = {"config_entries": SimpleNamespace(ConfigFlow=ConfigFlow), "DOMAIN": domain, "CONF_URL": "url",
+                 "AUTO_DISCOVERY_URL": "http://34e9898c-cc-tools:8080",
                  "vol": SimpleNamespace(Schema=lambda schema: schema, Required=lambda key, **_: key),
                  "async_probe_url": probe, "CrealityCloudApiError": ConnectionError, "urlparse": urlparse}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), "config_flow.py", "exec",
@@ -71,11 +72,30 @@ class ConfigFlowTests(unittest.IsolatedAsyncioTestCase):
         self.original = SimpleNamespace(unique_id="42", data={"url": "http://ha:8080"})
         self.flow.entries = {("creality_cloud", "42"): self.original}
 
-    async def test_always_asks_url_without_detecting_original_app(self):
+    async def test_stopped_or_missing_dev_app_offers_manual_url(self):
+        self.probe.side_effect = ConnectionError()
         result = await self.flow.async_step_user()
         self.assertEqual(result["step_id"], "user")
         self.assertIn("url", result["data_schema"])
-        self.probe.assert_not_awaited()
+        self.probe.assert_awaited_once_with(self.flow.hass, "http://34e9898c-cc-tools:8080")
+
+    async def test_running_repository_app_is_detected_without_probing_other_apps(self):
+        result = await self.flow.async_step_user()
+        self.assertEqual(result["type"], "create_entry")
+        self.assertEqual(result["data"]["url"], "http://34e9898c-cc-tools:8080")
+        self.probe.assert_awaited_once()
+
+    async def test_discovery_without_profile_offers_manual_connection(self):
+        self.probe.return_value = {"account": {}}
+        result = await self.flow.async_step_user()
+        self.assertEqual(result["type"], "form")
+        self.assertEqual(result["errors"], {"base": "account_unavailable"})
+
+    async def test_discovery_never_retargets_an_existing_dev_hub(self):
+        await self.flow.async_step_user({"url": "http://homeassistant.local:8088"})
+        with self.assertRaisesRegex(Abort, "already_configured"):
+            await self.flow.async_step_user()
+        self.assertEqual(self.flow.entries["creality_cloud_dev", "42"].data["url"], "http://homeassistant.local:8088")
 
     async def test_same_account_creates_separate_dev_hub(self):
         result = await self.flow.async_step_user({"url": "http://ha:8088/"})

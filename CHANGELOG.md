@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.7
+
+- Detects the running repository app `34e9898c_cc_tools`; offers a manual Home Assistant URL if unavailable.
+- Adds a separate Creality Cloud Models device with a scheduled uploads switch and six sensors: default category, available designs, last model upload, last upload, next upload and uploads today.
+- Reads persistent delivery history through the CC Tools Models API, including designs removed by cleanup, and preserves schedule settings when toggling uploads.
+- Isolates Models API failures from account and printer polling. Existing hubs keep their URLs and entity identifiers.
+- Updates installation instructions and the CC Tools Dev repository requirement.
+
 ## 1.0.6-dev.1
 
 - Creates the independent Creality Cloud Dev integration (`creality_cloud_dev`) to coexist with TitoTB Creality Cloud.

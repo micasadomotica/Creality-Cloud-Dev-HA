@@ -46,6 +46,14 @@ class CrealityCloudApi:
         payload = await self._request("GET", "/api/integration/events?limit=100")
         return list(payload.get("events") or [])
 
+    async def async_models(self) -> dict[str, Any]:
+        """Return upload information from the persistent delivery ledger."""
+        return await self._request("GET", "/api/integration/models")
+
+    async def async_set_models_enabled(self, enabled: bool) -> None:
+        """Toggle the saved schedule without replacing its selection."""
+        await self._request("PATCH", "/api/integration/models", json={"enabled": enabled})
+
     async def async_set_task_enabled(self, task_id: str, enabled: bool) -> None:
         """Enable or disable a task."""
         await self._request(
@@ -75,11 +83,13 @@ class CrealityCloudApi:
         except (ClientError, TimeoutError, ValueError) as err:
             raise CrealityCloudConnectionError(str(err)) from err
 
+        if not isinstance(payload, dict):
+            raise CrealityCloudResponseError("Invalid CC Tools response")
         if response.status >= 400 or payload.get("ok") is not True:
             code = str(payload.get("error") or "")
             message = str(payload.get("message") or code or f"HTTP {response.status}")
             raise CrealityCloudResponseError(message, code) from None
-        if int(payload.get("apiVersion", 1)) != 1:
+        if payload.get("apiVersion", 1) != 1:
             raise CrealityCloudResponseError(
                 "Unsupported CC Tools API version", "API_VERSION_UNSUPPORTED"
             )

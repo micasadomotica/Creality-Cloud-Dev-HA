@@ -17,6 +17,7 @@ AUTO_RESTART_LIMIT = 3
 AUTO_RESTART_STABILIZATION = timedelta(minutes=3)
 
 CONF_URL = "url"
+AUTO_DISCOVERY_URL = "http://34e9898c-cc-tools:8080"
 
 EVENT_PREFIX = "creality_cloud_dev"
 

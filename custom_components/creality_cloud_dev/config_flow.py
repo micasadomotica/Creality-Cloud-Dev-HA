@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import CrealityCloudApi, CrealityCloudApiError
-from .const import CONF_URL, DOMAIN
+from .const import AUTO_DISCOVERY_URL, CONF_URL, DOMAIN
 
 
 async def async_probe_url(hass: HomeAssistant, url: str) -> dict[str, Any]:
@@ -34,13 +34,23 @@ class CrealityCloudConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Always let the user choose the Dev endpoint."""
+        """Try the repository app, then offer a manual URL if it is offline."""
         if user_input is not None:
             return await self._async_validate_url(str(user_input[CONF_URL]))
-
+        try:
+            state = await async_probe_url(self.hass, AUTO_DISCOVERY_URL)
+        except CrealityCloudApiError:
+            state = {}
+        account_id = str(state.get("account", {}).get("userId") or "").strip()
+        if account_id:
+            await self.async_set_unique_id(account_id)
+            self._url = AUTO_DISCOVERY_URL
+            self._state = state
+            return await self._async_create_entry()
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({vol.Required(CONF_URL): str}),
+            errors={"base": "account_unavailable"} if state else {},
         )
 
     async def async_step_reconfigure(

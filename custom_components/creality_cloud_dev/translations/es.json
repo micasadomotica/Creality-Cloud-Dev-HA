@@ -18,7 +18,7 @@
         "data_description": {
           "url": "Dirección expuesta por CC Tools, incluyendo el protocolo y el puerto."
         },
-        "description": "Introduce la dirección de CC Tools Dev. Por ejemplo: http://IP_DE_HOME_ASSISTANT:8088. No se detecta automáticamente la aplicación de TitoTB.",
+        "description": "No se ha podido configurar automáticamente CC Tools Dev. Comprueba que esté iniciado e introduce http://IP_DE_HOME_ASSISTANT:8088 o http://homeassistant.local:8088 (o el puerto que hayas configurado).",
         "title": "Creality Cloud Dev"
       },
       "reconfigure": {
@@ -76,6 +76,24 @@
           "ready": "Preparada",
           "unavailable": "No disponible"
         }
+      },
+      "models_default_category": {
+        "name": "Categoría predeterminada"
+      },
+      "models_available": {
+        "name": "Diseños disponibles"
+      },
+      "models_last_model_upload": {
+        "name": "Último diseño subido"
+      },
+      "models_last_upload": {
+        "name": "Última subida"
+      },
+      "models_next_upload": {
+        "name": "Próxima subida"
+      },
+      "models_uploads_today": {
+        "name": "Subidas hoy"
       }
     },
     "switch": {
@@ -84,6 +102,9 @@
       },
       "printer_scheduled_prints": {
         "name": "Impresiones programadas"
+      },
+      "models_scheduled_uploads": {
+        "name": "Subidas de modelos programadas"
       }
     }
   },
