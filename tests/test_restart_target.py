@@ -29,6 +29,7 @@ def app(slug, port, ip):
 
 UPSTREAM = app("8966b8c7_cc_tools", 8080, "172.30.33.1")
 DEV = app("local_cc_tools", 8088, "172.30.33.2")
+REPOSITORY = app("34e9898c_cc_tools", 8088, "172.30.33.2")
 
 
 class RestartTargetTests(unittest.TestCase):
@@ -57,6 +58,33 @@ class RestartTargetTests(unittest.TestCase):
             with self.subTest(host=host):
                 result = self.select(f"http://{host}:8080", addresses={DEV["ip_address"]})
                 self.assertEqual(result["slug"], DEV["slug"])
+
+    def test_exact_repository_hostname_wins_over_reused_ip_after_migration(self):
+        for state in ("stopped", "error"):
+            for apps in ([{**DEV, "state": state}, REPOSITORY],
+                         [REPOSITORY, {**DEV, "state": state}]):
+                with self.subTest(state=state, order=[item["slug"] for item in apps]):
+                    result = self.select("http://34e9898c-cc-tools:8080", apps,
+                                         {REPOSITORY["ip_address"]})
+                    self.assertEqual(result["slug"], REPOSITORY["slug"])
+
+    def test_exact_local_hostname_never_switches_to_repository_with_same_ip(self):
+        result = self.select("http://local-cc-tools:8080", [DEV, REPOSITORY],
+                             {DEV["ip_address"]})
+        self.assertEqual(result["slug"], DEV["slug"])
+
+    def test_shared_ip_and_alias_still_require_unique_target(self):
+        for host in (DEV["ip_address"], "cc-tools.internal"):
+            with self.subTest(host=host):
+                self.assertIsNone(self.select(f"http://{host}:8080", [DEV, REPOSITORY],
+                                              {DEV["ip_address"]}))
+
+    def test_exact_hostname_requires_internal_port_and_unique_supervisor_name(self):
+        self.assertIsNone(self.select("http://34e9898c-cc-tools:8088", [REPOSITORY],
+                                      {REPOSITORY["ip_address"]}))
+        duplicate = {**DEV, "hostname": REPOSITORY["hostname"]}
+        self.assertIsNone(self.select("http://34e9898c-cc-tools:8080", [duplicate, REPOSITORY],
+                                      {REPOSITORY["ip_address"]}))
 
     def test_local_hostname_and_ipv6(self):
         self.assertEqual(self.select("http://homeassistant.local:8088/")["slug"], DEV["slug"])
@@ -111,6 +139,15 @@ class SupervisorDiscoveryTests(unittest.IsolatedAsyncioTestCase):
             ])):
                 result = await target.async_resolve_restart_app(hass, "http://homeassistant.local:8088")
                 self.assertEqual(result["slug"], DEV["slug"])
+            client.addons.list.return_value.append(SimpleNamespace(slug=REPOSITORY["slug"]))
+            client.addons.addon_info.side_effect = lambda slug: SimpleNamespace(
+                to_dict=lambda: DEV if slug == DEV["slug"] else REPOSITORY,
+            )
+            with patch.object(asyncio.get_running_loop(), "getaddrinfo", AsyncMock(return_value=[
+                (socket.AF_INET, socket.SOCK_STREAM, 6, "", (REPOSITORY["ip_address"], 8080))
+            ])):
+                result = await target.async_resolve_restart_app(hass, "http://34e9898c-cc-tools:8080")
+                self.assertEqual(result["slug"], REPOSITORY["slug"])
 
     async def test_without_supervisor_is_supported_for_polling_only(self):
         hass = SimpleNamespace(config=SimpleNamespace(components=set()))

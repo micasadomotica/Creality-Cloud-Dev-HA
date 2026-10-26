@@ -7,7 +7,7 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 | Creality Cloud de TitoTB | `creality_cloud` | CC Tools original, puerto 8080 |
 | Creality Cloud Dev | `creality_cloud_dev` | CC Tools Dev, puerto 8088 |
 
-**Versión 1.0.7**. Detecta CC Tools Dev del repositorio y añade el dispositivo **Creality Cloud Models** para consultar las subidas y controlar su programación. Conserva los dispositivos y entidades existentes al actualizar.
+**Versión 1.0.8**. Corrige la activación de **Reinicio automático** cuando una app antigua conserva la misma IP interna que CC Tools Dev después de migrar. Mantiene la detección automática, el dispositivo **Creality Cloud Models**, los dispositivos y las entidades existentes.
 
 ## Requisitos
 
@@ -19,7 +19,7 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 ## Instalación desde HACS
 
 1. Añade `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` como repositorio personalizado de tipo **Integración**.
-2. Descarga **Creality Cloud Dev 1.0.7** y reinicia Home Assistant.
+2. Descarga **Creality Cloud Dev 1.0.8** y reinicia Home Assistant.
 3. En **Ajustes > Dispositivos y servicios > Añadir integración**, busca **Creality Cloud Dev**.
 4. Si `34e9898c_cc_tools` está iniciado y responde con un perfil válido, se conecta automáticamente. Si no puede detectarlo, introduce `http://IP_DE_HOME_ASSISTANT:8088` o `http://homeassistant.local:8088`, con el puerto que hayas configurado. Puedes dejar la aplicación original encendida.
 5. Comprueba que aparece el hub con tu nombre de perfil y el sufijo **Dev**, sus impresoras y el dispositivo **Creality Cloud Models · Dev**.
@@ -37,6 +37,8 @@ Dentro de Dev solo se permite un hub por cuenta. Añadir otra vez esa cuenta no 
 Está desactivado por defecto. Al activarlo, comprueba `restart_app` y `restart_app_name` en los atributos del interruptor. Para la aplicación de este repositorio, normalmente indican `34e9898c_cc_tools` y **CC Tools Dev**.
 
 La integración consulta Supervisor antes de activarlo y justo antes de cada reinicio, contrastando la dirección y el puerto reales. No utiliza un destino fijo ni se basa solo en que el puerto sea 8088. Si no existe una coincidencia única, no reinicia ninguna aplicación.
+
+Desde 1.0.8, la dirección interna `http://34e9898c-cc-tools:8080` identifica la app por el nombre exacto que devuelve Supervisor. Una app local detenida o en Error puede conservar la misma IP interna; esa coincidencia ya no bloquea el interruptor cuando el nombre identifica un único destino. Las conexiones por IP o por otros alias siguen requiriendo una coincidencia única. No hace falta eliminar la app local ni volver a crear el hub.
 
 Mantiene los controles de tareas bloqueadas, la espera de dos horas entre reinicios, el límite de tres reinicios en 24 horas y el periodo de estabilización. Los datos del watchdog y los eventos usan el dominio `creality_cloud_dev`, separados de la integración original.
 

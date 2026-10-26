@@ -34,23 +34,29 @@ def select_restart_app(
     host_addresses: set[str],
     resolved_addresses: set[str],
 ) -> dict[str, str] | None:
-    """Require one app matching the host AND actual port, never the port alone."""
+    """Prefer Supervisor's exact hostname, then require unique host/port routing."""
     if (parsed := endpoint(url)) is None:
         return None
     hostname, port = parsed
+    apps = [app for app in apps
+            if str(app.get("slug") or "").endswith("_cc_tools")
+            and not app.get("host_network")
+            and "8080/tcp" in (app.get("network") or {})]
+    # Stopped apps can retain an IP subsequently assigned to another app. An
+    # exact Supervisor hostname identifies the app independently of that IP.
+    named = {
+        str(app["slug"]): {"slug": str(app["slug"]), "name": str(app.get("name") or app["slug"])}
+        for app in apps
+        if hostname == str(app.get("hostname") or "").lower().rstrip(".")
+    }
+    if named:
+        return next(iter(named.values())) if len(named) == 1 and port == 8080 else None
     matches = {}
     for app in apps:
         slug = str(app.get("slug") or "")
-        if not slug.endswith("_cc_tools") or app.get("host_network"):
-            continue
         bindings = app.get("network") or {}
-        if "8080/tcp" not in bindings:
-            continue
-        internal_host = str(app.get("hostname") or "").lower().rstrip(".")
         internal_ip = str(app.get("ip_address") or "")
-        internal = hostname == internal_host or (
-            bool(resolved_addresses) and resolved_addresses == {internal_ip}
-        )
+        internal = bool(resolved_addresses) and resolved_addresses == {internal_ip}
         local = bool(resolved_addresses) and resolved_addresses <= host_addresses
         if (internal and port == 8080) or (
             local and bindings["8080/tcp"] == port

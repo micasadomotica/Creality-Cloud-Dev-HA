@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.8
+
+- Fixes automatic restart target detection when a stopped or errored local CC Tools app retains the same internal IP as the repository app after migration.
+- Gives an exact Supervisor hostname priority over reused IP addresses, requiring the internal port 8080 and a unique app name. IP addresses and other aliases still require an unambiguous target.
+- Preserves configured URLs, entities, restart cooldowns and daily limits. Adds regression coverage for both repository and local hostnames, reused IPs and ambiguous targets.
+- Updates the README with the migration-related restart fix and upgrade instructions.
+
 ## 1.0.7
 
 - Detects the running repository app `34e9898c_cc_tools`; offers a manual Home Assistant URL if unavailable.
