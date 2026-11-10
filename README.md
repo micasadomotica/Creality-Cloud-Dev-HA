@@ -16,17 +16,36 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 - Acceso de Home Assistant a la URL de CC Tools Dev.
 - Supervisor y una URL HTTP local directa para el reinicio automático. La consulta de datos admite HTTP/HTTPS; los destinos remotos, con proxy o ambiguos no permiten decidir qué aplicación reiniciar.
 
-## Instalación desde HACS
+<!-- ha-marketplace:exclude-start -->
 
-1. Añade `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` como repositorio personalizado de tipo **Integración**.
-2. Descarga **Creality Cloud Dev 1.0.8** y reinicia Home Assistant.
-3. En **Ajustes > Dispositivos y servicios > Añadir integración**, busca **Creality Cloud Dev**.
-4. Si `34e9898c_cc_tools` está iniciado y responde con un perfil válido, se conecta automáticamente. Si no puede detectarlo, introduce `http://IP_DE_HOME_ASSISTANT:8088` o `http://homeassistant.local:8088`, con el puerto que hayas configurado. Puedes dejar la aplicación original encendida.
-5. Comprueba que aparece el hub con tu nombre de perfil y el sufijo **Dev**, sus impresoras y el dispositivo **Creality Cloud Models · Dev**.
+## Instalación desde Marketplace
+
+[Marketplace](https://www.home-assistant.io/integrations/marketplace) viene integrado en **Home Assistant 2026.11 o posterior**. Puedes añadir este repositorio con el botón:
+
+[![Abrir Creality Cloud Dev en Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=micasadomotica&repository=Creality-Cloud-Dev-HA&category=integration)
+
+1. Pulsa el botón y acepta añadir el repositorio de tipo **Integración** si todavía no aparece. Como alternativa, ve a **Ajustes > Marketplace > Añadir desde enlace**, pega `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` y pulsa **Añadir**.
+2. Conecta tu cuenta de GitHub si Marketplace lo solicita para acceder al repositorio personalizado.
+3. Abre **Creality Cloud Dev**, pulsa **Instalar** y revisa la versión ofrecida. Puedes consultar las [versiones publicadas](https://github.com/micasadomotica/Creality-Cloud-Dev-HA/releases/).
+4. Continúa con la configuración de la integración. Si Home Assistant solicita reiniciar, hazlo antes de continuar.
+
+### Home Assistant 2026.8–2026.10
+
+En estas versiones utiliza **HACS**: añade `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` como repositorio personalizado de tipo **Integración**, descarga la última versión compatible y reinicia Home Assistant. Después sigue la configuración siguiente.
+
+<!-- ha-marketplace:exclude-end -->
+
+## Configurar la conexión
+
+1. En **Ajustes > Dispositivos y servicios > Añadir integración**, busca **Creality Cloud Dev** si su asistente no se ha abierto automáticamente después de instalarla.
+2. Si `34e9898c_cc_tools` está iniciado y responde con un perfil válido, se conecta automáticamente. Si no puede detectarlo, introduce `http://IP_DE_HOME_ASSISTANT:8088` o `http://homeassistant.local:8088`, con el puerto que hayas configurado. Puedes dejar la aplicación original encendida.
+3. Comprueba que aparece el hub con tu nombre de perfil y el sufijo **Dev**, sus impresoras y el dispositivo **Creality Cloud Models · Dev**.
 
 La detección utiliza `http://34e9898c-cc-tools:8080` en la red interna de Home Assistant, según su [convención de nombres DNS](https://contributors.home-assistant.io/apps/guides/communication/). El puerto 8088 corresponde al acceso externo habitual. Solo se prueba esa aplicación; no se seleccionan automáticamente la versión local ni la de TitoTB.
 
-Para actualizar una instalación existente, actualiza primero CC Tools Dev desde la tienda de Apps y después esta integración desde HACS; reinicia Home Assistant. No elimines el hub: conservará su URL, sus entidades y el historial. La detección automática se aplica al añadir un hub nuevo.
+Para actualizar una instalación existente, actualiza primero CC Tools Dev desde la tienda de Apps y después esta integración desde **Ajustes > Actualizaciones** o desde Marketplace; reinicia Home Assistant para aplicar la actualización. En HA 2026.8–2026.10, utiliza HACS. No elimines el hub: conservará su URL, sus entidades y el historial. La detección automática se aplica al añadir un hub nuevo.
+
+Si ya la instalaste con HACS, al actualizar Home Assistant a 2026.11 o posterior Marketplace migra automáticamente el repositorio y sus entidades de actualización. No hace falta reinstalar Creality Cloud Dev ni volver a crear el hub. Consulta la [guía oficial de migración desde HACS](https://www.home-assistant.io/integrations/marketplace/#coming-from-hacs).
 
 Creality Cloud de TitoTB y Creality Cloud Dev aparecen como dos integraciones distintas. Ambas pueden consultar la misma cuenta, pero debes repartir las tareas programadas entre las aplicaciones para evitar acciones duplicadas.
 
