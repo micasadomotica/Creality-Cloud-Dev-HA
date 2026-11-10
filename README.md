@@ -24,6 +24,8 @@ Integración independiente para conectar **CC Tools Dev** con Home Assistant. Pu
 
 [![Abrir Creality Cloud Dev en Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=micasadomotica&repository=Creality-Cloud-Dev-HA&category=integration)
 
+Comprobado por el mantenedor el **10 de noviembre de 2026**: añadir Creality Cloud Dev desde este botón de Marketplace funciona correctamente en su instalación de Home Assistant.
+
 1. Pulsa el botón y acepta añadir el repositorio de tipo **Integración** si todavía no aparece. Como alternativa, ve a **Ajustes > Marketplace > Añadir desde enlace**, pega `https://github.com/micasadomotica/Creality-Cloud-Dev-HA` y pulsa **Añadir**.
 2. Conecta tu cuenta de GitHub si Marketplace lo solicita para acceder al repositorio personalizado.
 3. Abre **Creality Cloud Dev**, pulsa **Instalar** y revisa la versión ofrecida. Puedes consultar las [versiones publicadas](https://github.com/micasadomotica/Creality-Cloud-Dev-HA/releases/).
@@ -97,7 +99,7 @@ Se consulta `GET /api/integration/models` y el interruptor utiliza `PATCH /api/i
 
 ## Validación y soporte
 
-Las pruebas automáticas cubren detección y URL manual, separación de cuentas y dispositivos, reconfiguración, sensores y controles de Models, fallos de API y destino de reinicio. GitHub Actions ejecuta también HACS y Hassfest. La validación en una instalación real de Home Assistant queda pendiente.
+Las pruebas automáticas cubren detección y URL manual, separación de cuentas y dispositivos, reconfiguración, sensores y controles de Models, fallos de API y destino de reinicio. GitHub Actions ejecuta también HACS y Hassfest.
 
 Comunica los problemas en [Issues](https://github.com/micasadomotica/Creality-Cloud-Dev-HA/issues), indicando las versiones y la URL sin datos privados.
 
